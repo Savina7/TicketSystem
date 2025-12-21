@@ -15,11 +15,4 @@ public class Bus {
     private Company company;
 
 
-    public Bus addBus(){
-        return null;
-    }
-
-    public boolean updateStatus(){
-        return true;
-    }
 }

@@ -60,11 +60,6 @@ public class Student  extends  User{
         this.status = status;
     }
 
-    public  boolean verifyStudentStatus(){
-        return true;
-    }
-    public boolean updateStatus(){
-        return true;
-    }
+
 
 }

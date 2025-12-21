@@ -20,16 +20,4 @@ public class ValidationLog {
     private String qrCode;
     private String status;
 
-    // Metodat specifike mbeten manuale
-    public ValidationLog saveValidation(){
-        return null;
-    }
-
-    public boolean checkValidity(){
-        return true;
-    }
-
-    public List<ValidationLog> readHistory(){
-        return null;
-    }
 }

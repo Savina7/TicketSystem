@@ -22,11 +22,5 @@ public class Report {
     private Bus bus;
 
 
-    public Report registerReport(){
-        return null;
-    }
 
-    public List<Report> viewReports(){
-        return null;
-    }
 }

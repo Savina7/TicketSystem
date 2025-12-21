@@ -15,15 +15,5 @@ public class Company {
     private String companyEmail;
     private String status;
 
-    public Company create(){
-        return null;
-    }
 
-    public boolean update(){
-        return true;
-    }
-
-    public List<Report> viewReports(){
-        return null;
-    }
 }

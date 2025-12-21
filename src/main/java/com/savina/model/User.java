@@ -24,17 +24,5 @@ public class User {
     protected String status;
 
 
-    public void register(){}
 
-    public boolean logIn(){
-        return true;
-    }
-
-    public List<Ticket> searchTickets(){
-        return null;
-    }
-
-    public Ticket buyTicket(){
-        return null;
-    }
 }

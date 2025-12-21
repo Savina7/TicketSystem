@@ -21,15 +21,5 @@ public class Ticket {
     private Float price;
     private String status;
 
-    public boolean activate(){
-        return true;
-    }
 
-    public boolean checkValidity(){
-        return true;
-    }
-
-    public String generateQRCode(){
-        return null;
-    }
 }

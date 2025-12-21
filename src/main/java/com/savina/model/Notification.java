@@ -22,15 +22,5 @@ public class Notification {
     private Date scheduledTime;
 
 
-    public Notification sendNotification(){
-        return null;
-    }
 
-    public boolean read(){
-        return true;
-    }
-
-    public boolean scheduleNotification(){
-        return true;
-    }
 }

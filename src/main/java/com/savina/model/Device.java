@@ -16,11 +16,5 @@ public class Device {
     private Bus bus;
 
 
-    public boolean sendLog(){
-        return true;
-    }
 
-    public boolean updateFirmware(){
-        return true;
-    }
 }

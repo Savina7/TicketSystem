@@ -22,11 +22,5 @@ public class Payment {
     private String status;
 
 
-    public boolean processPayment(){
-        return true;
-    }
 
-    public String checkStatus(){
-        return null;
-    }
 }

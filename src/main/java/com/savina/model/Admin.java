@@ -17,13 +17,5 @@ public class Admin extends User{
         this.companyID = companyID;
     }
 
-    public boolean manageUser(){
-        return true;
-    }
-    public Company addCompany(){
-        return null;
-    }
-    public  Report generateReport(){
-        return null;
-    }
+
 }
