@@ -19,5 +19,4 @@ public class ValidationLog {
     private String deviceID;
     private String qrCode;
     private String status;
-
 }
