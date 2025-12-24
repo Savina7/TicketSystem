@@ -18,10 +18,15 @@ public class App
         UserService student=new UserService();
         student.registerStudent("Altea", "Kostallari",
                 "altea.kostallari@fti.com", "09988", "3434534");
-        */
+
         UserService admin=new UserService();
         admin.registerAdmin("Arbner", "Hoxha",
                 "arber.hoxha@abc.com", "09988", "3434534");
+
+*/
+        UserService admin=new UserService();
+        admin.login("09988","3434534");
+
 
     }
 }

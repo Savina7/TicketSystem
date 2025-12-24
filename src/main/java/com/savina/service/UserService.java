@@ -193,7 +193,7 @@ public class UserService {
 
             // Ruaj të dhënat për insert në ADMIN
             String adminIdNumber = rs.getString("ADMIN_ID_NUMBER");
-            String companyID = rs.getString("COMPANY_ID");
+            int companyID = rs.getInt("COMPANY_ID");
 
             // 2️⃣ Kontrollo në USERI nëse email ekziston
             String checkUserQuery = "SELECT COUNT(*) FROM USERI WHERE EMAIL = ?";
@@ -213,7 +213,7 @@ public class UserService {
             insertUserStmt.setString(2, lastName);
             insertUserStmt.setString(3, email);
             insertUserStmt.setString(4, phoneNumber);
-            insertUserStmt.setString(5, password);
+            insertUserStmt.setString(5, password); // opcional: hash password
             insertUserStmt.setString(6, "admin");
             insertUserStmt.setString(7, "1");
             insertUserStmt.executeUpdate();
@@ -225,13 +225,26 @@ public class UserService {
                 userId = generatedKeys.getInt(1);
             }
 
-            // 4️⃣ Insert në ADMIN
-            String insertAdminSql = "INSERT INTO ADMIN (USER_ID, COMPANY_ID, STATUS) " +
-                    "VALUES (?, ?, ?)";
+            // 4️⃣ Kontrollo nëse ADMIN_ID_NUMBER është përdorur
+            String checkAdminNumberQuery = "SELECT COUNT(*) FROM ADMIN WHERE ADMIN_ID_NUMBER = ?";
+            try (PreparedStatement checkAdminNumberStmt = con.prepareStatement(checkAdminNumberQuery)) {
+                checkAdminNumberStmt.setString(1, adminIdNumber);
+                try (ResultSet rsCheck = checkAdminNumberStmt.executeQuery()) {
+                    if (rsCheck.next() && rsCheck.getInt(1) > 0) {
+                        System.out.println("Ky ADMIN_ID_NUMBER është tashmë përdorur.");
+                        return;
+                    }
+                }
+            }
+
+            // 5️⃣ Insert në ADMIN
+            String insertAdminSql = "INSERT INTO ADMIN (USER_ID, COMPANY_ID, STATUS, ADMIN_ID_NUMBER) " +
+                    "VALUES (?, ?, ?, ?)";
             insertAdminStmt = con.prepareStatement(insertAdminSql);
             insertAdminStmt.setInt(1, userId);
-            insertAdminStmt.setString(2, companyID);
+            insertAdminStmt.setInt(2, companyID);
             insertAdminStmt.setString(3, "1");
+            insertAdminStmt.setString(4, adminIdNumber);
 
             int rowsInserted = insertAdminStmt.executeUpdate();
 
@@ -257,9 +270,53 @@ public class UserService {
 
 
 
+    public String login(String identifier, String password) {
 
-    public boolean logIn(String email, String password) {
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
 
-return true;
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            con = DriverManager.getConnection(DbUrl, DbUsername, DbPassword);
+
+            String sql =
+                    "SELECT u.USER_ID, u.ROLE " +
+                            "FROM USERI u " +
+                            "LEFT JOIN STUDENT s ON s.USER_ID = u.USER_ID " +
+                            "LEFT JOIN ADMIN a ON a.USER_ID = u.USER_ID " +
+                            "WHERE u.PASSWORD = ? " +
+                            "AND (u.EMAIL = ? OR u.PHONE_NUMBER = ? OR s.NR_MATRIKULIMI = ? OR a.ADMIN_ID_NUMBER = ?) " +
+                            "AND u.STATUS = '1'";
+
+            stmt = con.prepareStatement(sql);
+            stmt.setString(1, password);
+            stmt.setString(2, identifier);
+            stmt.setString(3, identifier);
+            stmt.setString(4, identifier);
+            stmt.setString(5, identifier);
+
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String role = rs.getString("ROLE");
+                int userId = rs.getInt("USER_ID");
+
+                System.out.println("Login OK | USER_ID=" + userId + " | ROLE=" + role);
+                return role;
+            } else {
+                System.out.println("Te dhena te gabuara!");
+                return null;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try { if (rs != null) rs.close(); } catch (Exception ignored) {}
+            try { if (stmt != null) stmt.close(); } catch (Exception ignored) {}
+            try { if (con != null) con.close(); } catch (Exception ignored) {}
+        }
     }
+
 }
