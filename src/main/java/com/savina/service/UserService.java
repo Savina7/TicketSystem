@@ -302,12 +302,31 @@ public class UserService {
                 String role = rs.getString("ROLE");
                 int userId = rs.getInt("USER_ID");
 
+                // ✅ Print login OK info
                 System.out.println("Login OK | USER_ID=" + userId + " | ROLE=" + role);
+
+                // Decide which dashboard to go to
+                switch (role) {
+                    case "user":
+                        // go to user dashboard
+                        break;
+                    case "student":
+                        // go to student dashboard
+                        break;
+                    case "admin":
+                        // go to admin dashboard
+                        break;
+                    default:
+                        // unknown role
+                        break;
+                }
+
                 return role;
             } else {
                 System.out.println("Te dhena te gabuara!");
                 return null;
             }
+
 
         } catch (Exception e) {
             e.printStackTrace();
