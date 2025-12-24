@@ -67,79 +67,81 @@ public class UserService {
                                 String email, String phoneNumber, String password) {
 
         Connection con = null;
-        PreparedStatement checkStmt = null;
-        PreparedStatement insertStmt = null;
-        ResultSet rs = null; // mban rezultatin e një SELECT
+        PreparedStatement checkStudentIdStmt = null;
+        PreparedStatement checkUserStmt = null;
+        PreparedStatement insertUserStmt = null;
+        PreparedStatement insertStudentStmt = null;
+        ResultSet rs = null;
 
         try {
             Class.forName("oracle.jdbc.OracleDriver");
             con = DriverManager.getConnection(DbUrl, DbUsername, DbPassword);
             con.setAutoCommit(false);
 
-            // 1️⃣ Kontrollo a ekziston user-i
-            String checkQuery = "SELECT COUNT(*) FROM USERI WHERE EMAIL = ?";
-            checkStmt = con.prepareStatement(checkQuery);
-            checkStmt.setString(1, email);
-            rs = checkStmt.executeQuery();
+            // 1️⃣ Kontrollo te dhënat ne STUDENT_ID (emri, mbiemri, email)
+            String checkStudentIdQuery = "SELECT STUDENT_ID_NUMBER, STUDY_PROGRAM, YEAR_OF_ENROLLMENT, YEAR_OF_GRADUATION " +
+                    "FROM STUDENT_ID WHERE STUDENT_NAME = ? AND STUDENT_SURNAME = ? AND EMAIL = ?";
+            checkStudentIdStmt = con.prepareStatement(checkStudentIdQuery);
+            checkStudentIdStmt.setString(1, firstName);
+            checkStudentIdStmt.setString(2, lastName);
+            checkStudentIdStmt.setString(3, email);
+            rs = checkStudentIdStmt.executeQuery();
 
+            if (!rs.next()) {
+                System.out.println("Te dhenat tuaja nuk jane te sakta.");
+                return;
+            }
+
+            // Ruaj të dhënat për insert në STUDENT
+            String studentIdNumber = rs.getString("STUDENT_ID_NUMBER");
+            String studyProgram = rs.getString("STUDY_PROGRAM");
+            int yearEnrollment = rs.getInt("YEAR_OF_ENROLLMENT");
+            int yearGraduation = rs.getInt("YEAR_OF_GRADUATION");
+
+            // 2️⃣ Kontrollo në USERI nëse email ekziston
+            String checkUserQuery = "SELECT COUNT(*) FROM USERI WHERE EMAIL = ?";
+            checkUserStmt = con.prepareStatement(checkUserQuery);
+            checkUserStmt.setString(1, email);
+            rs = checkUserStmt.executeQuery();
             if (rs.next() && rs.getInt(1) > 0) {
-                System.out.println("Studenti me kete email egziston ");
+                System.out.println("Studenti me kete email ekziston.");
                 return;
             }
 
-            // 2️⃣ Insert user i ri
-            String insertUserSql = "INSERT INTO USERI (FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, PASSWORD, ROLE, STATUS) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            insertStmt = con.prepareStatement(insertUserSql);
-            insertStmt.setString(1, firstName);
-            insertStmt.setString(2, lastName);
-            insertStmt.setString(3, email);
-            insertStmt.setString(4, phoneNumber);
-            insertStmt.setString(5, password);
-            insertStmt.setString(6, "student");
-            insertStmt.setString(7, "1");
-            insertStmt.executeUpdate();
+            // 3️⃣ Insert në USERI
+            String insertUserSql = "INSERT INTO USERI (FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, PASSWORD, ROLE, STATUS) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            insertUserStmt = con.prepareStatement(insertUserSql, new String[]{"USER_ID"});
+            insertUserStmt.setString(1, firstName);
+            insertUserStmt.setString(2, lastName);
+            insertUserStmt.setString(3, email);
+            insertUserStmt.setString(4, phoneNumber);
+            insertUserStmt.setString(5, password);
+            insertUserStmt.setString(6, "student");
+            insertUserStmt.setString(7, "1");
+            insertUserStmt.executeUpdate();
 
-            // 3️⃣ Get the USER_ID of the inserted user using SELECT by email
-            String selectUserIdSql = "SELECT USER_ID FROM USERI WHERE EMAIL = ?";
-            PreparedStatement selectStmt = con.prepareStatement(selectUserIdSql);
-            selectStmt.setString(1, email);
-            rs = selectStmt.executeQuery();
+            // Merr USER_ID i sapo insertuar
+            ResultSet generatedKeys = insertUserStmt.getGeneratedKeys();
             int userId = 0;
-            if (rs.next()) {
-                userId = rs.getInt("USER_ID");
+            if (generatedKeys.next()) {
+                userId = generatedKeys.getInt(1);
             }
 
-            // 4️⃣ Kontrollo te dhenat nga STUDENT_ID
-            String checkQuery1 = "SELECT COUNT(*) FROM STUDENT_ID WHERE STUDENT_NAME = ? AND STUDENT_SURNAME = ? AND EMAIL = ?";
-            checkStmt = con.prepareStatement(checkQuery1);
-            checkStmt.setString(1, firstName);
-            checkStmt.setString(2, lastName);
-            checkStmt.setString(3, email);
-            rs = checkStmt.executeQuery();
+            // 4️⃣ Insert në STUDENT
+            String insertStudentSql = "INSERT INTO STUDENT (USER_ID, NR_MATRIKULIMI, STUDY_PROGRAM, YEAR_OF_ENROLLMENT, YEAR_OF_GRADUATION) " +
+                    "VALUES (?, ?, ?, ?, ?)";
+            insertStudentStmt = con.prepareStatement(insertStudentSql);
+            insertStudentStmt.setInt(1, userId);
+            insertStudentStmt.setString(2, studentIdNumber);
+            insertStudentStmt.setString(3, studyProgram);
+            insertStudentStmt.setInt(4, yearEnrollment);
+            insertStudentStmt.setInt(5, yearGraduation);
 
-            if (rs.next() && rs.getInt(1) == 0) {
-                System.out.println("Te dhenat tuaja nuk jane te sakta");
-                return;
-            }
-
-            // 5️⃣ Insert into STUDENT table using the fetched USER_ID
-            String insertStudentSql =
-                    "INSERT INTO STUDENT (USER_ID, NR_MATRIKULIMI, STUDY_PROGRAM, YEAR_OF_ENROLLMENT, YEAR_OF_GRADUATION) " +
-                            "SELECT ?, STUDENT_ID_NUMBER, STUDY_PROGRAM, YEAR_OF_ENROLLMENT, YEAR_OF_GRADUATION " +
-                            "FROM STUDENT_ID " +
-                            "WHERE STUDENT_NAME = ? AND STUDENT_SURNAME = ? AND EMAIL = ?";
-
-            PreparedStatement insertStudentStmt = con.prepareStatement(insertStudentSql);
-            insertStudentStmt.setInt(1, userId);   // USER_ID from USERI
-            insertStudentStmt.setString(2, firstName);
-            insertStudentStmt.setString(3, lastName);
-            insertStudentStmt.setString(4, email);
-
-            int rows1 = insertStudentStmt.executeUpdate();
+            int rowsInserted = insertStudentStmt.executeUpdate();
 
             con.commit();
-
-            System.out.println("Studenti u regjistrua. Rreshta: " + rows1);
+            System.out.println("Studenti u regjistrua me sukses. Rreshta te inseruar ne STUDENT: " + rowsInserted);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -148,10 +150,110 @@ public class UserService {
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
+        } finally {
+            try { if (rs != null) rs.close(); } catch (Exception ignored) {}
+            try { if (checkStudentIdStmt != null) checkStudentIdStmt.close(); } catch (Exception ignored) {}
+            try { if (checkUserStmt != null) checkUserStmt.close(); } catch (Exception ignored) {}
+            try { if (insertUserStmt != null) insertUserStmt.close(); } catch (Exception ignored) {}
+            try { if (insertStudentStmt != null) insertStudentStmt.close(); } catch (Exception ignored) {}
+            try { if (con != null) con.close(); } catch (Exception ignored) {}
         }
     }
 
 
+
+    public void registerAdmin(String firstName, String lastName,
+                              String email, String phoneNumber, String password) {
+
+        Connection con = null;
+        PreparedStatement checkAdminIdStmt = null;
+        PreparedStatement checkUserStmt = null;
+        PreparedStatement insertUserStmt = null;
+        PreparedStatement insertAdminStmt = null;
+        ResultSet rs = null;
+
+        try {
+            Class.forName("oracle.jdbc.OracleDriver");
+            con = DriverManager.getConnection(DbUrl, DbUsername, DbPassword);
+            con.setAutoCommit(false);
+
+            // 1️⃣ Kontrollo të dhënat në ADMIN_ID (emri, mbiemri, email)
+            String checkAdminIdQuery = "SELECT ADMIN_ID_NUMBER, COMPANY_ID " +
+                    "FROM ADMIN_ID WHERE ADMIN_NAME = ? AND ADMIN_SURNAME = ? AND EMAIL = ?";
+            checkAdminIdStmt = con.prepareStatement(checkAdminIdQuery);
+            checkAdminIdStmt.setString(1, firstName);
+            checkAdminIdStmt.setString(2, lastName);
+            checkAdminIdStmt.setString(3, email);
+            rs = checkAdminIdStmt.executeQuery();
+
+            if (!rs.next()) {
+                System.out.println("Te dhenat tuaja nuk jane te sakta.");
+                return;
+            }
+
+            // Ruaj të dhënat për insert në ADMIN
+            String adminIdNumber = rs.getString("ADMIN_ID_NUMBER");
+            String companyID = rs.getString("COMPANY_ID");
+
+            // 2️⃣ Kontrollo në USERI nëse email ekziston
+            String checkUserQuery = "SELECT COUNT(*) FROM USERI WHERE EMAIL = ?";
+            checkUserStmt = con.prepareStatement(checkUserQuery);
+            checkUserStmt.setString(1, email);
+            rs = checkUserStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                System.out.println("Admini me kete email ekziston.");
+                return;
+            }
+
+            // 3️⃣ Insert në USERI
+            String insertUserSql = "INSERT INTO USERI (FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, PASSWORD, ROLE, STATUS) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            insertUserStmt = con.prepareStatement(insertUserSql, new String[]{"USER_ID"});
+            insertUserStmt.setString(1, firstName);
+            insertUserStmt.setString(2, lastName);
+            insertUserStmt.setString(3, email);
+            insertUserStmt.setString(4, phoneNumber);
+            insertUserStmt.setString(5, password);
+            insertUserStmt.setString(6, "admin");
+            insertUserStmt.setString(7, "1");
+            insertUserStmt.executeUpdate();
+
+            // Merr USER_ID i sapo insertuar
+            ResultSet generatedKeys = insertUserStmt.getGeneratedKeys();
+            int userId = 0;
+            if (generatedKeys.next()) {
+                userId = generatedKeys.getInt(1);
+            }
+
+            // 4️⃣ Insert në ADMIN
+            String insertAdminSql = "INSERT INTO ADMIN (USER_ID, COMPANY_ID, STATUS) " +
+                    "VALUES (?, ?, ?)";
+            insertAdminStmt = con.prepareStatement(insertAdminSql);
+            insertAdminStmt.setInt(1, userId);
+            insertAdminStmt.setString(2, companyID);
+            insertAdminStmt.setString(3, "1");
+
+            int rowsInserted = insertAdminStmt.executeUpdate();
+
+            con.commit();
+            System.out.println("Admini u regjistrua me sukses. Rreshta të inseruar në ADMIN: " + rowsInserted);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        } finally {
+            try { if (rs != null) rs.close(); } catch (Exception ignored) {}
+            try { if (checkAdminIdStmt != null) checkAdminIdStmt.close(); } catch (Exception ignored) {}
+            try { if (checkUserStmt != null) checkUserStmt.close(); } catch (Exception ignored) {}
+            try { if (insertUserStmt != null) insertUserStmt.close(); } catch (Exception ignored) {}
+            try { if (insertAdminStmt != null) insertAdminStmt.close(); } catch (Exception ignored) {}
+            try { if (con != null) con.close(); } catch (Exception ignored) {}
+        }
+    }
 
 
 

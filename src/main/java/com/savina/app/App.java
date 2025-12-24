@@ -12,11 +12,16 @@ public class App
     {
 
         /* UserService user=new UserService();
-        user.registerUser("ALtea","shimi",
-                "auSDsWDdRTus", "09988", "3434534");
-*/
+        user.registerUser("Altea","Kostallari",
+                "altea.kostallari@fti.com", "09988", "3434534");
+
         UserService student=new UserService();
         student.registerStudent("Altea", "Kostallari",
-                "savidsna.shimi@fti.com", "09988", "3434534");
+                "altea.kostallari@fti.com", "09988", "3434534");
+        */
+        UserService admin=new UserService();
+        admin.registerAdmin("Arbner", "Hoxha",
+                "arber.hoxha@abc.com", "09988", "3434534");
+
     }
 }
