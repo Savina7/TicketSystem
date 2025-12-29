@@ -1,6 +1,6 @@
-package com.savina.service;
+package com.savina.ticketsystem.service;
 
-import com.savina.model.Student;
+import com.savina.ticketsystem.model.Student;
 
 public class StudentService {
 

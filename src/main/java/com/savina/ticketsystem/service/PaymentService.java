@@ -1,8 +1,6 @@
-package com.savina.service;
+package com.savina.ticketsystem.service;
 
-import com.savina.model.Payment;
-import com.savina.model.Ticket;
-import com.savina.model.User;
+import com.savina.ticketsystem.model.Payment;
 
 import java.util.Date;
 import java.util.UUID;

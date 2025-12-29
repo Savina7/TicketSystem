@@ -1,6 +1,6 @@
-package com.savina.service;
+package com.savina.ticketsystem.service;
 
-import com.savina.model.Bus;
+import com.savina.ticketsystem.model.Bus;
 
 public class BusService {
 

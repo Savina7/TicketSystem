@@ -1,8 +1,8 @@
-package com.savina.service;
+package com.savina.ticketsystem.service;
 
-import com.savina.model.Admin;
-import com.savina.model.Company;
-import com.savina.model.Report;
+import com.savina.ticketsystem.model.Admin;
+import com.savina.ticketsystem.model.Company;
+import com.savina.ticketsystem.model.Report;
 
 public class AdminService {
 

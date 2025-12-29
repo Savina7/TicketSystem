@@ -1,4 +1,4 @@
-package com.savina.model;
+package com.savina.ticketsystem.model;
 
 import lombok.Getter;
 import lombok.Setter;

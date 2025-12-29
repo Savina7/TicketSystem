@@ -1,4 +1,4 @@
-package com.savina.model;
+package com.savina.ticketsystem.model;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter

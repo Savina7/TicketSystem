@@ -1,8 +1,8 @@
 package com.savina.app;
 
-import com.savina.model.TicketType;
-import com.savina.service.TicketService;
-import com.savina.service.UserService;
+import com.savina.ticketsystem.model.TicketType;
+import com.savina.ticketsystem.service.TicketService;
+import com.savina.ticketsystem.service.UserService;
 
 public class App {
     public static void main(String[] args) {

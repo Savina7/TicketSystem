@@ -1,9 +1,8 @@
-package com.savina.service;
+package com.savina.ticketsystem.service;
 
-import com.savina.model.Notification;
+import com.savina.ticketsystem.model.Notification;
 
 import java.util.Date;
-import java.util.UUID;
 
 public class NotificationService {
 

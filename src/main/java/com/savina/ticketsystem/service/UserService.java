@@ -1,5 +1,4 @@
-package com.savina.service;
-import com.savina.model.User;
+package com.savina.ticketsystem.service;
 import java.sql.*;
 
 

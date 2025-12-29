@@ -1,6 +1,6 @@
-package com.savina.service;
+package com.savina.ticketsystem.service;
 
-import com.savina.model.Report;
+import com.savina.ticketsystem.model.Report;
 
 import java.util.ArrayList;
 import java.util.List;

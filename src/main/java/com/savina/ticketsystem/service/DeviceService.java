@@ -1,6 +1,6 @@
-package com.savina.service;
+package com.savina.ticketsystem.service;
 
-import com.savina.model.Device;
+import com.savina.ticketsystem.model.Device;
 
 public class DeviceService {
 

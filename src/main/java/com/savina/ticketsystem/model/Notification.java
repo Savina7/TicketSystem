@@ -1,4 +1,4 @@
-package com.savina.model;
+package com.savina.ticketsystem.model;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,20 +6,20 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Report {
-    private String reportID;
-    private String reportType;
-    private Date reportTime;
-    private Company company;
+public class Notification {
+    private String notifID;
     private User user;
     private Ticket ticket;
-    private Bus bus;
+    private String type;
+    private String message;
+    private Date createdAt;
+    private Boolean isRead;
+    private Date scheduledTime;
 
 
 
