@@ -15,11 +15,12 @@ public class Ticket {
     private String ticketID;
     private Date activationDate;
     private Date expirationDay;
-    private String ticketType;
+    private TicketType ticketType;
     private String qrCode;
     private User user;
     private Float price;
-    private String status;
+    private TicketStatus status;
+
 
 
 }
