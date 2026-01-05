@@ -9,18 +9,26 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "ADMIN")
-@PrimaryKeyJoinColumn(name = "USER_ID") // lidh Admin me User në Inheritance
+@Table(name = "ADMIN", schema = "SOFT")
+@PrimaryKeyJoinColumn(name = "USER_ID")
 public class Admin extends User {
 
     @Column(name = "COMPANY_ID")
-    private String companyID;
+    private Integer companyID; // Ndryshuar në Integer sipas SQL
 
-    // Konstruktor pa userID (gjenerohet automatikisht)
+    @Column(name = "ADMIN_ID_NUMBER")
+    private String adminIdNumber; // Kjo ishte fusha që mungonte
+
+    @Column(name = "STATUS")
+    private String adminStatus; // Kjo i korrespondon CHAR(1) ne SQL
+
+
     public Admin(String firstName, String lastName, String email, String phoneNumber,
                  String password, String role, Date registrationDate, String status,
-                 String companyID) {
+                 Integer companyID, String adminIdNumber) {
         super(firstName, lastName, email, phoneNumber, password, role, registrationDate, status);
         this.companyID = companyID;
+        this.adminIdNumber = adminIdNumber;
+        this.adminStatus = "1"; // Default aktiv
     }
 }

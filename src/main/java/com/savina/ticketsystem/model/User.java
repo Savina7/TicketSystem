@@ -37,9 +37,9 @@ public class User {
     @Column(name = "ROLE")
     private String role;
 
-    @Temporal(TemporalType.TIMESTAMP) // e saktë për datat në JPA
-    @Column(name = "REGISTRATION_DATE")
-    private Date registrationDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "REGISTRATION_DATE", updatable = false) // mos e lejo ndryshimin pas regjistrimit
+    private Date registrationDate = new Date();
 
     @Column(name = "STATUS")
     private String status;

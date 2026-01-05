@@ -1,340 +1,163 @@
 package com.savina.ticketsystem.service;
-import java.sql.*;
 
+import com.savina.ticketsystem.model.*;
+import com.savina.ticketsystem.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.util.Optional;
+
+@Service
+@Transactional
 public class UserService {
 
-    private static String DbUsername = "soft";
-    private static String DbPassword = "1";
-    private static String DbUrl = "jdbc:oracle:thin:@localhost:1521/XEPDB1";
+    @Autowired
+    private StudentRepository studentRepository;
 
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private StudentIdRepository studentIdRepository;
+
+    @Autowired
+    private AdminIdRepository adminIdRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    // -------- REGISTER USER --------
     public void registerUser(String firstName, String lastName,
-                         String email, String phoneNumber, String password) {
+                             String email, String phone, String password) {
 
-        Connection con = null;
-        PreparedStatement checkStmt = null;
-        PreparedStatement insertStmt = null;
-        ResultSet rs = null; // mban rezultatin e një SELECT
-
-        try {
-            Class.forName("oracle.jdbc.OracleDriver");
-            con = DriverManager.getConnection(DbUrl, DbUsername, DbPassword);
-            con.setAutoCommit(false);
-
-            // 1️⃣ Kontrollo a ekziston user-i
-            String checkQuery =
-                    "SELECT COUNT(*) FROM USERI WHERE EMAIL = ?";
-            checkStmt = con.prepareStatement(checkQuery); //Përgatit këtë SELECT query që ka ? brenda
-            checkStmt.setString(1, email); //Vendos email-in te placeholder-i i parë (?),logjikisht lart po java e ka ndryshe
-            rs = checkStmt.executeQuery(); // ekzekutohet
-
-            if (rs.next() && rs.getInt(1) > 0) {
-                System.out.println("Useri me kete email egziston ");
-                return;
-            }
-
-            // 2️⃣ Insert user i ri
-            String insert =
-                    "INSERT INTO USERI ( FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, PASSWORD,ROLE,STATUS) VALUES ( ?, ?, ?, ?,?,?,?)";
-
-            insertStmt = con.prepareStatement(insert);
-            insertStmt.setString(1, firstName);
-            insertStmt.setString(2, lastName);
-            insertStmt.setString(3, email);
-            insertStmt.setString(4, phoneNumber);
-            insertStmt.setString(5, password);
-            insertStmt.setString(6,"user");
-
-            insertStmt.setString(7,"1");
-
-            int rows = insertStmt.executeUpdate();
-            con.commit();
-
-            System.out.println("User u regjistrua. Rreshta: " + rows);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                if (con != null) con.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+        if (userRepository.findByEmail(email).isPresent()) {
+            System.out.println("User ekziston");
+            return;
         }
+
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPhoneNumber(phone);
+        user.setPassword(password);
+        user.setRole("user");
+        user.setStatus("1");
+
+        userRepository.save(user);
+        System.out.println("User u regjistrua");
     }
 
+    // -------- REGISTER STUDENT --------
     public void registerStudent(String firstName, String lastName,
-                                String email, String phoneNumber, String password) {
+                                String email, String phone, String password) {
 
-        Connection con = null;
-        PreparedStatement checkStudentIdStmt = null;
-        PreparedStatement checkUserStmt = null;
-        PreparedStatement insertUserStmt = null;
-        PreparedStatement insertStudentStmt = null;
-        ResultSet rs = null;
+        var check = studentIdRepository
+                .findByStudentNameAndStudentSurnameAndEmail(firstName, lastName, email);
 
-        try {
-            Class.forName("oracle.jdbc.OracleDriver");
-            con = DriverManager.getConnection(DbUrl, DbUsername, DbPassword);
-            con.setAutoCommit(false);
-
-            // 1️⃣ Kontrollo te dhënat ne STUDENT_ID (emri, mbiemri, email)
-            String checkStudentIdQuery = "SELECT STUDENT_ID_NUMBER, STUDY_PROGRAM, YEAR_OF_ENROLLMENT, YEAR_OF_GRADUATION " +
-                    "FROM STUDENT_ID WHERE STUDENT_NAME = ? AND STUDENT_SURNAME = ? AND EMAIL = ?";
-            checkStudentIdStmt = con.prepareStatement(checkStudentIdQuery);
-            checkStudentIdStmt.setString(1, firstName);
-            checkStudentIdStmt.setString(2, lastName);
-            checkStudentIdStmt.setString(3, email);
-            rs = checkStudentIdStmt.executeQuery();
-
-            if (!rs.next()) {
-                System.out.println("Te dhenat tuaja nuk jane te sakta.");
-                return;
-            }
-
-            // Ruaj të dhënat për insert në STUDENT
-            String studentIdNumber = rs.getString("STUDENT_ID_NUMBER");
-            String studyProgram = rs.getString("STUDY_PROGRAM");
-            int yearEnrollment = rs.getInt("YEAR_OF_ENROLLMENT");
-            int yearGraduation = rs.getInt("YEAR_OF_GRADUATION");
-
-            // 2️⃣ Kontrollo në USERI nëse email ekziston
-            String checkUserQuery = "SELECT COUNT(*) FROM USERI WHERE EMAIL = ?";
-            checkUserStmt = con.prepareStatement(checkUserQuery);
-            checkUserStmt.setString(1, email);
-            rs = checkUserStmt.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                System.out.println("Studenti me kete email ekziston.");
-                return;
-            }
-
-            // 3️⃣ Insert në USERI
-            String insertUserSql = "INSERT INTO USERI (FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, PASSWORD, ROLE, STATUS) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            insertUserStmt = con.prepareStatement(insertUserSql, new String[]{"USER_ID"});
-            insertUserStmt.setString(1, firstName);
-            insertUserStmt.setString(2, lastName);
-            insertUserStmt.setString(3, email);
-            insertUserStmt.setString(4, phoneNumber);
-            insertUserStmt.setString(5, password);
-            insertUserStmt.setString(6, "student");
-            insertUserStmt.setString(7, "1");
-            insertUserStmt.executeUpdate();
-
-            // Merr USER_ID i sapo insertuar
-            ResultSet generatedKeys = insertUserStmt.getGeneratedKeys();
-            int userId = 0;
-            if (generatedKeys.next()) {
-                userId = generatedKeys.getInt(1);
-            }
-
-            // 4️⃣ Insert në STUDENT
-            String insertStudentSql = "INSERT INTO STUDENT (USER_ID, NR_MATRIKULIMI, STUDY_PROGRAM, YEAR_OF_ENROLLMENT, YEAR_OF_GRADUATION) " +
-                    "VALUES (?, ?, ?, ?, ?)";
-            insertStudentStmt = con.prepareStatement(insertStudentSql);
-            insertStudentStmt.setInt(1, userId);
-            insertStudentStmt.setString(2, studentIdNumber);
-            insertStudentStmt.setString(3, studyProgram);
-            insertStudentStmt.setInt(4, yearEnrollment);
-            insertStudentStmt.setInt(5, yearGraduation);
-
-            int rowsInserted = insertStudentStmt.executeUpdate();
-
-            con.commit();
-            System.out.println("Studenti u regjistrua me sukses. Rreshta te inseruar ne STUDENT: " + rowsInserted);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                if (con != null) con.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        } finally {
-            try { if (rs != null) rs.close(); } catch (Exception ignored) {}
-            try { if (checkStudentIdStmt != null) checkStudentIdStmt.close(); } catch (Exception ignored) {}
-            try { if (checkUserStmt != null) checkUserStmt.close(); } catch (Exception ignored) {}
-            try { if (insertUserStmt != null) insertUserStmt.close(); } catch (Exception ignored) {}
-            try { if (insertStudentStmt != null) insertStudentStmt.close(); } catch (Exception ignored) {}
-            try { if (con != null) con.close(); } catch (Exception ignored) {}
+        if (check.isEmpty()) {
+            System.out.println("Te dhenat nuk jane te sakta");
+            return;
         }
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            System.out.println("Email ekziston");
+            return;
+        }
+
+        StudentId idInfo = check.get();
+
+        // Krijojmë STUDENT-in (trashëgon User automatikisht)
+        Student student = new Student();
+        student.setFirstName(firstName);
+        student.setLastName(lastName);
+        student.setEmail(email);
+        student.setPhoneNumber(phone);
+        student.setPassword(password);
+        student.setRole("student");
+        student.setStatus("1");
+
+        // Të dhëna specifike Student
+        student.setNrMatrikullimi(idInfo.getStudentIdNumber());
+        student.setStudyProgram(idInfo.getStudyProgram());
+        student.setYearOfEnrolment(idInfo.getYearOfEnrollment());
+        student.setYearOfGraduation(idInfo.getYearOfGraduation());
+
+        studentRepository.save(student);
+        System.out.println("Student u regjistrua");
     }
 
-
-
+    // -------- REGISTER ADMIN --------
     public void registerAdmin(String firstName, String lastName,
-                              String email, String phoneNumber, String password) {
+                              String email, String phone, String password) {
 
-        Connection con = null;
-        PreparedStatement checkAdminIdStmt = null;
-        PreparedStatement checkUserStmt = null;
-        PreparedStatement insertUserStmt = null;
-        PreparedStatement insertAdminStmt = null;
-        ResultSet rs = null;
+        var check = adminIdRepository
+                .findByAdminNameAndAdminSurnameAndEmail(firstName, lastName, email);
 
-        try {
-            Class.forName("oracle.jdbc.OracleDriver");
-            con = DriverManager.getConnection(DbUrl, DbUsername, DbPassword);
-            con.setAutoCommit(false);
-
-            // 1️⃣ Kontrollo të dhënat në ADMIN_ID (emri, mbiemri, email)
-            String checkAdminIdQuery = "SELECT ADMIN_ID_NUMBER, COMPANY_ID " +
-                    "FROM ADMIN_ID WHERE ADMIN_NAME = ? AND ADMIN_SURNAME = ? AND EMAIL = ?";
-            checkAdminIdStmt = con.prepareStatement(checkAdminIdQuery);
-            checkAdminIdStmt.setString(1, firstName);
-            checkAdminIdStmt.setString(2, lastName);
-            checkAdminIdStmt.setString(3, email);
-            rs = checkAdminIdStmt.executeQuery();
-
-            if (!rs.next()) {
-                System.out.println("Te dhenat tuaja nuk jane te sakta.");
-                return;
-            }
-
-            // Ruaj të dhënat për insert në ADMIN
-            String adminIdNumber = rs.getString("ADMIN_ID_NUMBER");
-            int companyID = rs.getInt("COMPANY_ID");
-
-            // 2️⃣ Kontrollo në USERI nëse email ekziston
-            String checkUserQuery = "SELECT COUNT(*) FROM USERI WHERE EMAIL = ?";
-            checkUserStmt = con.prepareStatement(checkUserQuery);
-            checkUserStmt.setString(1, email);
-            rs = checkUserStmt.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                System.out.println("Admini me kete email ekziston.");
-                return;
-            }
-
-            // 3️⃣ Insert në USERI
-            String insertUserSql = "INSERT INTO USERI (FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, PASSWORD, ROLE, STATUS) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            insertUserStmt = con.prepareStatement(insertUserSql, new String[]{"USER_ID"});
-            insertUserStmt.setString(1, firstName);
-            insertUserStmt.setString(2, lastName);
-            insertUserStmt.setString(3, email);
-            insertUserStmt.setString(4, phoneNumber);
-            insertUserStmt.setString(5, password); // opcional: hash password
-            insertUserStmt.setString(6, "admin");
-            insertUserStmt.setString(7, "1");
-            insertUserStmt.executeUpdate();
-
-            // Merr USER_ID i sapo insertuar
-            ResultSet generatedKeys = insertUserStmt.getGeneratedKeys();
-            int userId = 0;
-            if (generatedKeys.next()) {
-                userId = generatedKeys.getInt(1);
-            }
-
-            // 4️⃣ Kontrollo nëse ADMIN_ID_NUMBER është përdorur
-            String checkAdminNumberQuery = "SELECT COUNT(*) FROM ADMIN WHERE ADMIN_ID_NUMBER = ?";
-            try (PreparedStatement checkAdminNumberStmt = con.prepareStatement(checkAdminNumberQuery)) {
-                checkAdminNumberStmt.setString(1, adminIdNumber);
-                try (ResultSet rsCheck = checkAdminNumberStmt.executeQuery()) {
-                    if (rsCheck.next() && rsCheck.getInt(1) > 0) {
-                        System.out.println("Ky ADMIN_ID_NUMBER është tashmë përdorur.");
-                        return;
-                    }
-                }
-            }
-
-            // 5️⃣ Insert në ADMIN
-            String insertAdminSql = "INSERT INTO ADMIN (USER_ID, COMPANY_ID, STATUS, ADMIN_ID_NUMBER) " +
-                    "VALUES (?, ?, ?, ?)";
-            insertAdminStmt = con.prepareStatement(insertAdminSql);
-            insertAdminStmt.setInt(1, userId);
-            insertAdminStmt.setInt(2, companyID);
-            insertAdminStmt.setString(3, "1");
-            insertAdminStmt.setString(4, adminIdNumber);
-
-            int rowsInserted = insertAdminStmt.executeUpdate();
-
-            con.commit();
-            System.out.println("Admini u regjistrua me sukses. Rreshta të inseruar në ADMIN: " + rowsInserted);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                if (con != null) con.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        } finally {
-            try { if (rs != null) rs.close(); } catch (Exception ignored) {}
-            try { if (checkAdminIdStmt != null) checkAdminIdStmt.close(); } catch (Exception ignored) {}
-            try { if (checkUserStmt != null) checkUserStmt.close(); } catch (Exception ignored) {}
-            try { if (insertUserStmt != null) insertUserStmt.close(); } catch (Exception ignored) {}
-            try { if (insertAdminStmt != null) insertAdminStmt.close(); } catch (Exception ignored) {}
-            try { if (con != null) con.close(); } catch (Exception ignored) {}
+        if (check.isEmpty()) {
+            System.out.println("Te dhenat nuk jane te sakta");
+            return;
         }
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            System.out.println("Email ekziston");
+            return;
+        }
+
+        AdminId idInfo = check.get();
+
+        // Krijojmë ADMIN-in (trashëgon User automatikisht)
+        Admin admin = new Admin();
+        admin.setFirstName(firstName);
+        admin.setLastName(lastName);
+        admin.setEmail(email);
+        admin.setPhoneNumber(phone);
+        admin.setPassword(password);
+        admin.setRole("admin");
+        admin.setStatus("1");
+
+        // Të dhëna specifike Admin
+        admin.setAdminIdNumber(idInfo.getAdminIdNumber());
+        admin.setCompanyID(idInfo.getCompanyId());
+        admin.setAdminStatus("1");
+
+        adminRepository.save(admin);
+        System.out.println("Admin u regjistrua");
     }
 
-
-
+    // -------- LOGIN --------
     public String login(String identifier, String password) {
 
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        Optional<User> userOpt = userRepository.findForLogin(identifier, password);
 
-        try {
-            Class.forName("oracle.jdbc.OracleDriver");
-            con = DriverManager.getConnection(DbUrl, DbUsername, DbPassword);
-
-            String sql =
-                    "SELECT u.USER_ID, u.ROLE " +
-                            "FROM USERI u " +
-                            "LEFT JOIN STUDENT s ON s.USER_ID = u.USER_ID " +
-                            "LEFT JOIN ADMIN a ON a.USER_ID = u.USER_ID " +
-                            "WHERE u.PASSWORD = ? " +
-                            "AND (u.EMAIL = ? OR u.PHONE_NUMBER = ? OR s.NR_MATRIKULIMI = ? OR a.ADMIN_ID_NUMBER = ?) " +
-                            "AND u.STATUS = '1'";
-
-            stmt = con.prepareStatement(sql);
-            stmt.setString(1, password);
-            stmt.setString(2, identifier);
-            stmt.setString(3, identifier);
-            stmt.setString(4, identifier);
-            stmt.setString(5, identifier);
-
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String role = rs.getString("ROLE");
-                int userId = rs.getInt("USER_ID");
-
-                // ✅ Print login OK info
-                System.out.println("Login OK | USER_ID=" + userId + " | ROLE=" + role);
-
-                // Decide which dashboard to go to
-                switch (role) {
-                    case "user":
-                        // go to user dashboard
-                        break;
-                    case "student":
-                        // go to student dashboard
-                        break;
-                    case "admin":
-                        // go to admin dashboard
-                        break;
-                    default:
-                        // unknown role
-                        break;
-                }
-
-                return role;
-            } else {
-                System.out.println("Te dhena te gabuara!");
-                return null;
-            }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (userOpt.isEmpty()) {
+            System.out.println("Te dhena te gabuara!");
             return null;
-        } finally {
-            try { if (rs != null) rs.close(); } catch (Exception ignored) {}
-            try { if (stmt != null) stmt.close(); } catch (Exception ignored) {}
-            try { if (con != null) con.close(); } catch (Exception ignored) {}
         }
-    }
 
+        User user = userOpt.get();
+
+        System.out.println(
+                "Login OK | USER_ID=" + user.getUserID() +
+                        " | ROLE=" + user.getRole()
+        );
+
+        // Vendos navigimin bazuar në rol (vetëm shembull)
+        switch (user.getRole()) {
+            case "user":
+                System.out.println("Navigimi: User Dashboard");
+                break;
+            case "student":
+                System.out.println("Navigimi: Student Dashboard");
+                break;
+            case "admin":
+                System.out.println("Navigimi: Admin Dashboard");
+                break;
+            default:
+                System.out.println("Role i panjohur");
+        }
+
+        return user.getRole(); // Vetëm rolin
+    }
 }

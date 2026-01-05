@@ -1,7 +1,9 @@
 package com.savina.ticketsystem;
 
 import com.savina.ticketsystem.model.Ticket;
+import com.savina.ticketsystem.model.TicketType;
 import com.savina.ticketsystem.service.TicketService;
+import com.savina.ticketsystem.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,16 +17,27 @@ public class TicketSystemApplication {
     }
 
     @Bean
-    CommandLineRunner testDatabase(TicketService ticketService) {
+    CommandLineRunner setupData(UserService userService, TicketService ticketService) {
         return args -> {
-            System.out.println("Testing database connection...");
 
-            // provon të marrë të gjithë tiketat (supozohet që TicketService ka një metodë findAll)
-            ticketService.findAll().forEach(ticket ->
-                    System.out.println(ticket)
+
+            // 2️⃣ Test Login
+            String role = userService.login("saavina.shimi@fti.com", "user123");
+            System.out.println("--- Savina blen bileten ditore ---");
+
+            // Blen bileten ditore
+            Ticket dailyTicket = ticketService.buyTicket(
+                    "savina.shimi@fti.com",  // email i user
+                    TicketType.DAILY          // supozim TicketType enum ekziston
             );
 
-            System.out.println("Database connection successful!");
+            Ticket activatedTicket = ticketService.activateTicket(dailyTicket.getQrCode());
+            System.out.println("Ticket u aktivizua me sukses. Skadon ne: " + activatedTicket.getExpirationDay());
+
+            boolean isValid = ticketService.checkValidity(dailyTicket.getQrCode());
+            System.out.println("Ticket valid: " + isValid);
+            System.out.println("Ticket u krijua me QR Code: " + dailyTicket.getQrCode());
         };
     }
+
 }
