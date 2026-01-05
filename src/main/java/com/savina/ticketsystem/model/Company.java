@@ -16,7 +16,7 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO) // ID automatik
     @Column(name = "company_id", updatable = false)
-    private Integer companyID;
+    private Integer companyId;
 
     @Column(name = "company_name", length = 100)
     private String companyName;

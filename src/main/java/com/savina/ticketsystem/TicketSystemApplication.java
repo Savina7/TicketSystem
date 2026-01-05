@@ -1,8 +1,8 @@
 package com.savina.ticketsystem;
 
-import com.savina.ticketsystem.model.Ticket;
-import com.savina.ticketsystem.model.TicketType;
-import com.savina.ticketsystem.service.TicketService;
+import com.savina.ticketsystem.model.*;
+import com.savina.ticketsystem.service.CompanyService;
+import com.savina.ticketsystem.service.ReportService;
 import com.savina.ticketsystem.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,27 +17,24 @@ public class TicketSystemApplication {
     }
 
     @Bean
-    CommandLineRunner setupData(UserService userService, TicketService ticketService) {
+    CommandLineRunner testReport(ReportService reportService) {
         return args -> {
 
+            ReportType type = ReportType.SALES;
+            ReportPeriod period = ReportPeriod.DAILY;
 
-            // 2️⃣ Test Login
-            String role = userService.login("saavina.shimi@fti.com", "user123");
-            System.out.println("--- Savina blen bileten ditore ---");
+            // 3️⃣ Krijo dhe ruaj raportin
+            Report savedReport = reportService.registerReport(type, period, company, user);
 
-            // Blen bileten ditore
-            Ticket dailyTicket = ticketService.buyTicket(
-                    "savina.shimi@fti.com",  // email i user
-                    TicketType.DAILY          // supozim TicketType enum ekziston
-            );
-
-            Ticket activatedTicket = ticketService.activateTicket(dailyTicket.getQrCode());
-            System.out.println("Ticket u aktivizua me sukses. Skadon ne: " + activatedTicket.getExpirationDay());
-
-            boolean isValid = ticketService.checkValidity(dailyTicket.getQrCode());
-            System.out.println("Ticket valid: " + isValid);
-            System.out.println("Ticket u krijua me QR Code: " + dailyTicket.getQrCode());
+            // 4️⃣ Printo për të kontrolluar
+            System.out.println("Raporti u ruajt me sukses!");
+            System.out.println("ID: " + savedReport.getReportID());
+            System.out.println("Tipi: " + savedReport.getReportType());
+            System.out.println("Periudha: " + period);
+            System.out.println("Kompania: " + company.getCompanyName());
+            System.out.println("User: " + user.getFirstName() + " " + user.getLastName());
         };
     }
+
 
 }

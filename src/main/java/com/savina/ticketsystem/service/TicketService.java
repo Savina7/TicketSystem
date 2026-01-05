@@ -34,7 +34,7 @@ public class TicketService {
     // -------- Ble një ticket --------
     public Ticket buyTicket(String email, TicketType ticketType) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User nuk ekziston me këtë email"));
+                    .orElseThrow(() -> new RuntimeException("User nuk ekziston me këtë email"));
 
         Ticket ticket = new Ticket();
         ticket.setUser(user);
