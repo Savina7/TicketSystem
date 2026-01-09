@@ -15,7 +15,7 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO) // ID automatik
     @Column(name = "notif_id", updatable = false)
-    private Integer notifID;
+    private Integer notificationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

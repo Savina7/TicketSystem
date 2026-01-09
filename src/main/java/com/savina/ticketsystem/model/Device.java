@@ -22,6 +22,11 @@ public class Device {
     @Column(name = "serial_number")
     private Float serialNumber;
 
+
+    @Column(name = "STATUS", length = 1)
+    private String status;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bus_id") // lidhja me tabelën Bus
     private Bus bus;

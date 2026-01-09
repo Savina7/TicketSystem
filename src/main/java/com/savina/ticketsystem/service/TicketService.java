@@ -22,6 +22,8 @@ public class TicketService {
 
     @Autowired
     private TicketRepository ticketRepository;
+    @Autowired
+    private StudentService studentService;
 
     @Autowired
     private UserRepository userRepository;
@@ -36,6 +38,15 @@ public class TicketService {
         User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User nuk ekziston me këtë email"));
 
+        if (ticketType == TicketType.STUDENT && !user.getRole().equals("STUDENT")) {
+            throw new RuntimeException("Vetëm përdoruesit STUDENT mund të blejnë këtë bileta");
+        }
+        if (ticketType == TicketType.STUDENT) {
+            // Thërret metodën nga StudentService
+            if (!studentService.verifyStudentStatus(email)) {
+                throw new RuntimeException("Vetëm studentët aktivë mund të blejnë këtë bileta");
+            }
+        }
         Ticket ticket = new Ticket();
         ticket.setUser(user);
         ticket.setTicketType(ticketType);

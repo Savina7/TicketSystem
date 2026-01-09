@@ -1,27 +1,38 @@
 package com.savina.ticketsystem.service;
 
+import com.savina.ticketsystem.model.Ticket;
 import com.savina.ticketsystem.model.ValidationLog;
+import com.savina.ticketsystem.repository.ValidationLogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Date;
 
+@Service
 public class ValidationLogService {
 
-    private List<ValidationLog> logs = new ArrayList<>();
+    @Autowired
+    private ValidationLogRepository validationLogRepository;
 
-    public ValidationLog saveValidation(ValidationLog log) {
-        log.setValidationDate(new Date());
-        logs.add(log);
-        return log;
+    /**
+     * Ruan validation log me të gjitha fushat.
+     * validationDate do vendoset automatikisht nga DB (SYSDATE)
+     */
+    public ValidationLog saveValidation(Ticket ticket, String deviceID, String status, String qrCode) {
+        ValidationLog log = new ValidationLog();
+        log.setTicket(ticket);
+        log.setDeviceID(deviceID);  // vendos deviceID si string
+        log.setStatus(status);
+        log.setQrCode(qrCode);
+
+        // validationDate vendoset automatikisht nga DB (SYSDATE)
+        return validationLogRepository.save(log);
     }
 
-    public boolean checkValidity(ValidationLog log) {
-        return "VALID".equalsIgnoreCase(log.getStatus());
-    }
-
-    public List<ValidationLog> readHistory() {
-        return logs;
+    /**
+     * Merr të gjitha validation log-et
+     */
+    public List<ValidationLog> getAllLogs() {
+        return validationLogRepository.findAll();
     }
 }
-

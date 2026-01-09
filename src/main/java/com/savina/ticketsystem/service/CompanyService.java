@@ -1,7 +1,9 @@
 package com.savina.ticketsystem.service;
 
+import com.savina.ticketsystem.model.Bus;
 import com.savina.ticketsystem.model.Company;
 import com.savina.ticketsystem.model.Report;
+import com.savina.ticketsystem.repository.BusRepository;
 import com.savina.ticketsystem.repository.CompanyRepository;
 import com.savina.ticketsystem.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,10 @@ public class CompanyService {
 
     @Autowired
     private CompanyRepository companyRepository;
+
+    @Autowired
+    private BusRepository busRepository;
+
 
     @Autowired
     private ReportRepository reportRepository;
@@ -43,10 +49,7 @@ public class CompanyService {
     }
 
 
-    // Merr raportet e kompanisë
-    public List<Report> viewReports(Long companyID) {
-        // logjikën do e implementosh vet
-        return null;
-    }
+
+
 }
 

@@ -19,16 +19,19 @@ public class Bus {
     @GeneratedValue(strategy = GenerationType.AUTO) // gjeneron automatikisht ID
     private Integer busId;
 
-    @Column(name = "bus_number", length = 20)
-    private String busNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     private Company company;
 
+    @Column(name = "STATUS", length = 1)
+    private String status;
+
+
+
     // Konstruktor pa ID (ID gjenerohet automatikisht)
-    public Bus(String busNumber, Company company) {
-        this.busNumber = busNumber;
+    public Bus( Company company) {
+
         this.company = company;
     }
 }

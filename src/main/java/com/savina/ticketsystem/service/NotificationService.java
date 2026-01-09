@@ -32,7 +32,7 @@ public class NotificationService {
 
     // Marko notification si lexuar
     public boolean readNotification(Long notificationId) {
-        Optional<Notification> optionalNotification = notificationRepository.findById(notificationId);
+        Optional<Notification> optionalNotification = notificationRepository.findByNotificationId(notificationId);
         if (optionalNotification.isPresent()) {
             Notification notification = optionalNotification.get();
             notification.setIsRead(true);
@@ -44,7 +44,7 @@ public class NotificationService {
 
     // Schedule notification
     public boolean scheduleNotification(Long notificationId, Date scheduledTime) {
-        Optional<Notification> optionalNotification = notificationRepository.findById(notificationId);
+        Optional<Notification> optionalNotification = notificationRepository.findByNotificationId(notificationId);
 
         if (optionalNotification.isPresent()) {
             Notification notification = optionalNotification.get();

@@ -3,6 +3,7 @@ package com.savina.ticketsystem;
 import com.savina.ticketsystem.model.*;
 import com.savina.ticketsystem.service.CompanyService;
 import com.savina.ticketsystem.service.ReportService;
+import com.savina.ticketsystem.service.StudentService;
 import com.savina.ticketsystem.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,24 +18,26 @@ public class TicketSystemApplication {
     }
 
     @Bean
-    CommandLineRunner testReport(ReportService reportService) {
+    CommandLineRunner testRegisterUser(UserService userService) {
         return args -> {
 
-            ReportType type = ReportType.SALES;
-            ReportPeriod period = ReportPeriod.DAILY;
+            String firstName = "Altea";
+            String lastName = "Kostallari";
+            String email = "altea.kostallari@outlook.com";
+            String phone = "0684563782";
+            String password = "test123";
 
-            // 3️⃣ Krijo dhe ruaj raportin
-            Report savedReport = reportService.registerReport(type, period, company, user);
 
-            // 4️⃣ Printo për të kontrolluar
-            System.out.println("Raporti u ruajt me sukses!");
-            System.out.println("ID: " + savedReport.getReportID());
-            System.out.println("Tipi: " + savedReport.getReportType());
-            System.out.println("Periudha: " + period);
-            System.out.println("Kompania: " + company.getCompanyName());
-            System.out.println("User: " + user.getFirstName() + " " + user.getLastName());
+            userService.registerUser(firstName, lastName, email, phone, password);
+
+            // 3️⃣ Printo për të kontrolluar
+            System.out.println("Useri u regjistrua me sukses!");
+            System.out.println("Emri: " + firstName + " " + lastName);
+            System.out.println("Email: " + email);
+            System.out.println("Tel: " + phone);
         };
     }
+
 
 
 }
