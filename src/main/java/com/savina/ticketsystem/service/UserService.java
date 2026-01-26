@@ -27,7 +27,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // -------- REGISTER USER --------
+
     public void registerUser(String firstName, String lastName,
                              String email, String phone, String password) {
 
@@ -49,26 +49,21 @@ public class UserService {
         System.out.println("User u regjistrua");
     }
 
-    // -------- REGISTER STUDENT --------
+
     public void registerStudent(String firstName, String lastName,
                                 String email, String phone, String password) {
 
         var check = studentIdRepository
                 .findByStudentNameAndStudentSurnameAndEmail(firstName, lastName, email);
-
         if (check.isEmpty()) {
-            System.out.println("Te dhenat nuk jane te sakta");
+            System.out.println("The provided data is invalid.");
             return;
         }
-
         if (userRepository.findByEmail(email).isPresent()) {
-            System.out.println("Email ekziston");
+            System.out.println("An account with this email already exists.");
             return;
         }
-
         StudentId idInfo = check.get();
-
-        // Krijojmë STUDENT-in (trashëgon User automatikisht)
         Student student = new Student();
         student.setFirstName(firstName);
         student.setLastName(lastName);
@@ -78,17 +73,16 @@ public class UserService {
         student.setRole("student");
         student.setStatus("1");
 
-        // Të dhëna specifike Student
         student.setNrMatrikullimi(idInfo.getStudentIdNumber());
         student.setStudyProgram(idInfo.getStudyProgram());
         student.setYearOfEnrolment(idInfo.getYearOfEnrollment());
         student.setYearOfGraduation(idInfo.getYearOfGraduation());
 
         studentRepository.save(student);
-        System.out.println("Student u regjistrua");
+        System.out.println("The student has been successfully registered.");
     }
 
-    // -------- REGISTER ADMIN --------
+
     public void registerAdmin(String firstName, String lastName,
                               String email, String phone, String password) {
 
@@ -107,7 +101,7 @@ public class UserService {
 
         AdminId idInfo = check.get();
 
-        // Krijojmë ADMIN-in (trashëgon User automatikisht)
+
         Admin admin = new Admin();
         admin.setFirstName(firstName);
         admin.setLastName(lastName);
@@ -117,7 +111,7 @@ public class UserService {
         admin.setRole("admin");
         admin.setStatus("1");
 
-        // Të dhëna specifike Admin
+
         admin.setAdminIdNumber(idInfo.getAdminIdNumber());
         admin.setCompanyID(idInfo.getCompanyId());
         admin.setAdminStatus("1");
@@ -126,7 +120,6 @@ public class UserService {
         System.out.println("Admin u regjistrua");
     }
 
-    // -------- LOGIN --------
     public String login(String identifier, String password) {
 
         Optional<User> userOpt = userRepository.findForLogin(identifier, password);
@@ -143,7 +136,7 @@ public class UserService {
                         " | ROLE=" + user.getRole()
         );
 
-        // Vendos navigimin bazuar në rol (vetëm shembull)
+
         switch (user.getRole()) {
             case "user":
                 System.out.println("Navigimi: User Dashboard");
@@ -158,6 +151,6 @@ public class UserService {
                 System.out.println("Role i panjohur");
         }
 
-        return user.getRole(); // Vetëm rolin
+        return user.getRole();
     }
 }

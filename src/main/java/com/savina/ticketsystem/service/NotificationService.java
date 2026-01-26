@@ -30,7 +30,7 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    // Marko notification si lexuar
+
     public boolean readNotification(Long notificationId) {
         Optional<Notification> optionalNotification = notificationRepository.findByNotificationId(notificationId);
         if (optionalNotification.isPresent()) {
@@ -42,19 +42,19 @@ public class NotificationService {
         return false;
     }
 
-    // Schedule notification
+
     public boolean scheduleNotification(Long notificationId, Date scheduledTime) {
         Optional<Notification> optionalNotification = notificationRepository.findByNotificationId(notificationId);
 
         if (optionalNotification.isPresent()) {
             Notification notification = optionalNotification.get();
             notification.setScheduledTime(scheduledTime);
-            notification.setIsRead(false); // Nëse do ta bëjmë “not read” përsëri
+            notification.setIsRead(false);
             notificationRepository.save(notification);
             return true;
         }
 
-        return false; // Nëse notifikimi nuk ekziston
+        return false;
     }
 
 

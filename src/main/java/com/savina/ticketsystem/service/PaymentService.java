@@ -20,17 +20,15 @@ public class PaymentService {
     @Autowired
     private TicketRepository ticketRepository;
 
-    // Proceson dhe ruan pagesën në databazë
+
     public Payment processPayment(Long ticketId, Payment payment) {
-        // 1️⃣ Vendos datën dhe transaction code
+
         payment.setPaymentDate(new Date());
         payment.setTransactionCode(UUID.randomUUID().toString());
         payment.setStatus("C"); // COMPLETED
 
-        // 2️⃣ Vendos paymentType gjithmonë "CARD"
         payment.setPaymentType("CARD");
 
-        // 3️⃣ Merr çmimin e ticket dhe e shton tek amount
         Optional<Ticket> ticketOpt = ticketRepository.findById(String.valueOf(ticketId));
 
         if (ticketOpt.isPresent()) {
@@ -44,18 +42,16 @@ public class PaymentService {
             }
         }
 
-        // 4️⃣ Ruaj payment-in në bazë
         return paymentRepository.save(payment);
     }
 
 
-    // Kontrollon statusin e pagesës
     public String checkStatus(Long paymentId) {
         Optional<Payment> optionalPayment = paymentRepository.findById(String.valueOf(paymentId));
 
         if (optionalPayment.isPresent()) {
             Payment payment = optionalPayment.get();
-            // kthe statusin si string
+
             return String.valueOf(payment.getStatus());
         } else {
             return "NOT FOUND";

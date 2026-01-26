@@ -8,7 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Integer> {
-    // Ndryshuar nga findByStudentNameAndStudentSurname në findByFirstNameAndLastName
     Optional<Student> findByFirstNameAndLastNameAndEmail(String firstName, String lastName, String email);
     Optional<Student> findByEmail(String email);
 }

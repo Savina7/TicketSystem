@@ -30,7 +30,7 @@ public class TicketSystemApplication {
 
             userService.registerUser(firstName, lastName, email, phone, password);
 
-            // 3️⃣ Printo për të kontrolluar
+
             System.out.println("Useri u regjistrua me sukses!");
             System.out.println("Emri: " + firstName + " " + lastName);
             System.out.println("Email: " + email);

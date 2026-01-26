@@ -18,9 +18,7 @@ public class ReportService {
     @Autowired
     private TicketRepository ticketRepository;
 
-    /**
-     * Krijon raportin bazuar në reportType dhe reportPeriod të dhënë
-     */
+
     public Report registerReport(ReportType type, ReportPeriod period, Company company, User user) {
         // Krijo objektin Report
         Report report = new Report();
@@ -28,11 +26,11 @@ public class ReportService {
         report.setCompany(company);
         report.setUser(user);
 
-        // ticket dhe bus mbeten null
+
         report.setTicket(null);
         report.setBus(null);
 
-        // Llogarit raportin sipas tipit
+
         switch (type) {
             case SALES:
                 calculateSales(report, period);
@@ -44,30 +42,27 @@ public class ReportService {
                 throw new IllegalArgumentException("Ky raport nuk mbështetet: " + type);
         }
 
-        // Ruaj raportin
+
         return reportRepository.save(report);
     }
 
 
-    /**
-     * Raporti i shitjeve totale (gjithëpërfshirës)
-     */
+
     private void calculateSales(Report report, ReportPeriod period) {
         Date startDate = getStartDate(period);
         Date endDate = new Date();
 
-        // Merr të gjitha biletat e aktivizuara në periudhën e zgjedhur
+
         List<Ticket> tickets = ticketRepository.findByActivationDateBetween(startDate, endDate);
 
-        // Llogarit totalin e shitjeve
+
         double totalSales = tickets.stream()
                 .mapToDouble(Ticket::getPrice)
                 .sum();
 
         System.out.println("Total Sales: " + totalSales);
 
-        // Opsionale: ruaje totalin në Report nëse ke fushë për këtë
-        // report.setTotalSales(totalSales);
+
     }
 
     /**
@@ -77,14 +72,14 @@ public class ReportService {
         Date startDate = getStartDate(period);
         Date endDate = new Date();
 
-        // Merr të gjitha biletat e aktivizuara në periudhë
+
         List<Ticket> tickets = ticketRepository.findByActivationDateBetween(startDate, endDate);
 
-        // Grupi sipas biletës dhe numëron sa herë është shitur secila
+
         Map<Ticket, Long> ticketCounts = tickets.stream()
                 .collect(Collectors.groupingBy(ticket -> ticket, Collectors.counting()));
 
-        // Gjej biletën më të shitur
+
         Ticket topTicket = ticketCounts.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
@@ -93,9 +88,7 @@ public class ReportService {
         report.setTicket(topTicket);
     }
 
-    /**
-     * Kthen datën e fillimit të periudhës së raportit
-     */
+
     private Date getStartDate(ReportPeriod period) {
         Calendar cal = Calendar.getInstance();
 
@@ -125,9 +118,7 @@ public class ReportService {
         return cal.getTime();
     }
 
-    /**
-     * Shfaq të gjitha raportet
-     */
+
     public List<Report> viewReports() {
         return reportRepository.findAll();
     }

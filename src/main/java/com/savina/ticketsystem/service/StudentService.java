@@ -17,7 +17,7 @@ public class StudentService {
     public boolean verifyStudentStatus(String email) {
         int currentYear = LocalDate.now().getYear();
 
-        // Kërkon studentin nga email
+
         Optional<Student> optionalStudent = studentRepository.findByEmail(email);
 
         if (optionalStudent.isEmpty()) {
@@ -27,7 +27,7 @@ public class StudentService {
 
         Student student = optionalStudent.get();
 
-        // Kontrollon nëse studenti është aktiv sipas vitit akademik
+
         if (currentYear >= student.getYearOfEnrolment() && currentYear <= student.getYearOfGraduation()) {
             System.out.println("Ky student ekziston dhe është aktiv");
             return true;

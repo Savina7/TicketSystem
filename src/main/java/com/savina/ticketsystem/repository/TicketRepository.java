@@ -13,3 +13,5 @@ public interface TicketRepository extends JpaRepository<Ticket, String> {
     Optional<Ticket> findByQrCode(String qrCode);
     List<Ticket> findByActivationDateBetween(Date startDate, Date endDate);
 }
+
+

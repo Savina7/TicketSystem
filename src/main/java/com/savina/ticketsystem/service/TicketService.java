@@ -28,23 +28,21 @@ public class TicketService {
     @Autowired
     private UserRepository userRepository;
 
-    // -------- Merr të gjitha biletat --------
+
     public List<Ticket> findAll() {
         return ticketRepository.findAll();
     }
 
-    // -------- Ble një ticket --------
     public Ticket buyTicket(String email, TicketType ticketType) {
         User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User nuk ekziston me këtë email"));
+                    .orElseThrow(() -> new RuntimeException("No user exists with this email."));
 
         if (ticketType == TicketType.STUDENT && !user.getRole().equals("STUDENT")) {
-            throw new RuntimeException("Vetëm përdoruesit STUDENT mund të blejnë këtë bileta");
+            throw new RuntimeException("Only STUDENT users can purchase this ticket.");
         }
         if (ticketType == TicketType.STUDENT) {
-            // Thërret metodën nga StudentService
             if (!studentService.verifyStudentStatus(email)) {
-                throw new RuntimeException("Vetëm studentët aktivë mund të blejnë këtë bileta");
+                throw new RuntimeException("This ticket can only be purchased by active students.");
             }
         }
         Ticket ticket = new Ticket();
@@ -53,13 +51,13 @@ public class TicketService {
         ticket.setPrice(ticketType.getPrice());
         ticket.setStatus(TicketStatus.BOUGHT);
         ticket.setQrCode(UUID.randomUUID().toString());
-        ticket.setActivationDate(null); // nuk aktivizohet menjëherë
+        ticket.setActivationDate(null);
         ticket.setExpirationDay(null);
 
         return ticketRepository.save(ticket);
     }
 
-    // -------- Aktivizo një ticket --------
+
     public Ticket activateTicket(String qrCode) {
         Ticket ticket = ticketRepository.findByQrCode(qrCode)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
@@ -79,7 +77,7 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
-    // -------- Kontrollo vlefshmërinë e ticket --------
+
     public boolean checkValidity(String qrCode) {
         Ticket ticket = ticketRepository.findByQrCode(qrCode)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
@@ -110,7 +108,7 @@ public class TicketService {
         return false;
     }
 
-    // -------- Gjenero QR Code për ticket --------
+
     public String generateQRCode(Ticket ticket) {
         String qrCode = UUID.randomUUID().toString();
         ticket.setQrCode(qrCode);
@@ -118,16 +116,7 @@ public class TicketService {
         return qrCode;
     }
 
-    public byte[] generateQRCodeImage(String text) throws Exception {
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 250, 250);
 
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-        return pngOutputStream.toByteArray();
-    }
-
-    // -------- Ruaj ticket --------
     public void save(Ticket ticket) {
         ticketRepository.save(ticket);
     }

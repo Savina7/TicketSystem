@@ -24,9 +24,9 @@ public class CompanyService {
     @Autowired
     private ReportRepository reportRepository;
 
-    // Krijo kompani
+
     public Company createCompany(String companyName, String companyEmail) {
-        // Kontrollo nëse kompania ekziston
+
         if (companyRepository.existsByCompanyName(companyName)) {
             throw new RuntimeException("Kompania me kete emer egziston");
         }
@@ -36,7 +36,7 @@ public class CompanyService {
     }
 
 
-    // Përditëso kompani
+
     public boolean updateCompany(Integer companyId, String companyName, String companyEmail) {
         Company company = companyRepository.findByCompanyId(companyId)
                 .orElseThrow(() -> new RuntimeException("Kjo kompani me kete ID nuk ekziston"));

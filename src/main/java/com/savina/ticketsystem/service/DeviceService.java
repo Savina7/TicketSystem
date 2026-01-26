@@ -12,14 +12,13 @@ public class DeviceService {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    // Shto device të ri
     public Device addDevice(String deviceType, Float serialNumber, Bus bus) {
         Device device = new Device(deviceType, serialNumber, bus);
         device.setStatus("A"); // default ACTIVE
         return deviceRepository.save(device);
     }
 
-    // Përditëso të dhënat e device
+
     public Device updateDevice(Long deviceId, String deviceType, Float serialNumber, Bus bus, String status) {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new RuntimeException("Device nuk u gjet me ID: " + deviceId));

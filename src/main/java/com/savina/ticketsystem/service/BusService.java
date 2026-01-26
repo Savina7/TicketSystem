@@ -12,9 +12,7 @@ public class BusService {
     @Autowired
     private static BusRepository busRepository;
 
-    // -------------------------
-    // Shtimi i autobusit (status gjithmonë 'A')
-    // -------------------------
+
     public static Bus addBus(Company company) {
         Bus bus = new Bus();
         bus.setCompany(company);
@@ -22,9 +20,7 @@ public class BusService {
         return busRepository.save(bus);
     }
 
-    // -------------------------
-    // Përditësimi i statusit
-    // -------------------------
+
     public Bus updateStatus(Integer busId, String newStatus) {
         Bus bus = busRepository.findById(busId)
                 .orElseThrow(() -> new RuntimeException("Bus nuk u gjet me id: " + busId));
